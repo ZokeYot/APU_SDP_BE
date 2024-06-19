@@ -221,3 +221,13 @@ def get_lecturer_quizzes(requestBody):
         return [200, json.dumps(quizzes)]
     except (ValueError, dbConnection.error) as e:
         return [500, json.dumps({"failure": str(e)})]
+
+
+def delete_quiz(requestBody):
+    try:
+        quizID = json.loads(requestBody).get('quizID')
+        dbConnection.cursor.execute("DELETE FROM Quiz WHERE Quiz_ID = %s", [quizID])
+        dbConnection.connection.commit()
+        return [200, json.dumps({"success": "ok"})]
+    except (ValueError, dbConnection.error) as e:
+        return [500, json.dumps({"failure": str(e)})]

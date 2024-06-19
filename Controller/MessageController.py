@@ -7,66 +7,61 @@ import json
 
 def get_user_messages(requestBody):
     try:
-        userID = json.loads(requestBody).get('userID')
-        dbConnection.cursor.execute("SELECT * FROM Messages WHERE Sender_ID = %s OR Receiver_ID = %s", [userID, userID])
+        data = json.loads(requestBody)
+        userID = data.get('userID')
+        lastDateTime = data.get('lastDateTime')
+
+        dbConnection.cursor.execute("SELECT * FROM Messages WHERE (Sender_ID = %s OR Receiver_ID = %s) AND Date > %s "
+                                    " ORDER BY Date ASC", (userID, userID, lastDateTime))
 
         result = dbConnection.cursor.fetchall()
         conversations = collections.defaultdict(list)
-        other_userID = 0
+
+        other_user = 0
         for row in result:
+            messageID = row[0]
             senderID = row[1]
             receiverID = row[2]
             date = row[3]
             content = row[4]
 
-
+            if str(senderID) == userID:
+                other_user = receiverID
+            elif str(receiverID) == userID:
+                other_user = senderID
 
             conversation = {
+                "messageID": messageID,
                 "senderID": senderID,
                 "receiverID": receiverID,
                 "date": str(date),
                 "content": content
             }
-            conversations[other_userID].append(conversation)
+
+            conversations[other_user].append(conversation)
 
         output = []
         for other_userID, messages in conversations.items():
+            dbConnection.cursor.execute("SELECT Name, Profile_Picture FROM User WHERE User_ID = %s", [other_userID])
+            result = dbConnection.cursor.fetchone()
+
             output.append({
                 "userID": other_userID,
-                "conversation": messages
+                "name": result[0],
+                "profile_picture": base64.b64encode(result[1]).decode('utf-8'),
+                "messages": messages
             })
 
         return [200, json.dumps(output)]
     except (ValueError, dbConnection.error) as e:
         return [500, json.dumps({"failure": str(e)})]
 
-def get_messages(requestBody):
-    try:
-        data = json.loads(requestBody)
-        userID = data.get('userID')
-        query = "SELECT * FROM Messages WHERE Sender_ID = %s OR Receiver_ID = %s"
-
-        dbConnection.cursor.execute(query, [userID, userID])
-        result = dbConnection.cursor.fetchall()
-
-        data = []
-        for row in result:
-            message = {
-                "senderID": row[1],
-                "receiverID": row[2],
-                "date": str(row[3]),
-                "content": row[4]
-            }
-
-            data.append(message)
-
-        return [200, json.dumps(data)]
-    except ValueError as e:
-        return [500, json.dumps({"failure": str(e)})]
 
 def get_group_message(requestBody):
     try:
-        userID = json.loads(requestBody).get('userID')
+        data = json.loads(requestBody)
+        userID = data.get('userID')
+        lastDateTime = data.get('lastDateTime')
 
         user_group = check_user_group(userID)
 
@@ -74,23 +69,38 @@ def get_group_message(requestBody):
             return [200, json.dumps({"success": "Empty Conversation"})]
         group = []
         for groupID in user_group:
-            query = "SELECT Sender_ID, Date, Content FROM Group_Messages WHERE Group_ID = %s"
-            dbConnection.cursor.execute(query, [groupID])
+            query = "SELECT Message_ID, Sender_ID, u.Name, u.Profile_Picture, Date, Content " \
+                    "FROM Group_Messages gm Join User u ON gm.Sender_ID = u.User_ID " \
+                    "WHERE Group_ID = %s AND Date > %s ORDER BY Date ASC"
+            dbConnection.cursor.execute(query, (groupID, lastDateTime))
             result = dbConnection.cursor.fetchall()
             groupMessages = []
+
             for row in result:
                 message = {
-                    "senderID": row[0],
-                    "date": str(row[1]),
-                    "content": row[2]
+                    "messageID": row[0],
+                    "senderID": row[1],
+                    "name": row[2],
+                    "profile_picture": base64.b64encode(row[3]).decode('utf-8'),
+                    "date": str(row[4]),
+                    "content": row[5]
                 }
                 groupMessages.append(message)
 
-            group.append({"groupID": groupID, "messages": groupMessages})
+            dbConnection.cursor.execute("SELECT Name, Admin_ID, Profile_Picture FROM Conversation_Group "
+                                        "WHERE Group_ID = %s", [groupID])
+            groupInfo = dbConnection.cursor.fetchone()
+            name = groupInfo[0]
+            adminID = groupInfo[1]
+            profile_picture = base64.b64encode(groupInfo[2]).decode('utf-8')
+
+            group.append(
+                {"groupID": groupID, "name": name, "adminID": adminID, "profile_picture": profile_picture, "messages": groupMessages})
         return [200, json.dumps(group)]
 
     except (ValueError, dbConnection.error) as e:
         return [500, json.dumps({"failure": str(e)})]
+
 
 def check_user_group(userID):
     query = "SELECT Group_ID, Members FROM Conversation_Group"
@@ -107,6 +117,7 @@ def check_user_group(userID):
             user_group.append(group_id)
 
     return user_group
+
 
 def send_group_message(requestBody):
     try:

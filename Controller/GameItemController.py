@@ -18,6 +18,7 @@ def get_titles(requestBody):
 
     except (ValueError, dbConnection.error) as e:
         return [500, json.dumps({"failure": str(e)})]
+
 def add_title(requestBody):
     try:
         data = json.loads(requestBody)
@@ -47,3 +48,39 @@ def add_title(requestBody):
         return [500, json.dumps({"failure": str(e)})]
 
 
+def add_item(requestBody):
+    try:
+        data = json.loads(requestBody)
+
+        userID = data.get('userID')
+        amount = data.get('amount')
+
+        dbConnection.cursor.execute("SELECT * FROM Student_Items WHERE Student_ID = %s", [userID])
+        if dbConnection.cursor.fetchone():
+            query = "UPDATE Student_Items SET Amount = Amount + %s WHERE Student_ID = %s"
+            dbConnection.cursor.execute(query, [amount, userID])
+        else:
+            query = "INSERT INTO Student_Items(Student_ID, Item_ID, Amount)" \
+                    "VALUES(%s, 1, %s)"
+            dbConnection.cursor.execute(query, (userID, amount))
+
+        number = 500 * int(amount)
+        dbConnection.cursor.execute("UPDATE User SET GamingPoint = GamingPoint - %s WHERE User_ID = %s", (number, userID))
+        dbConnection.connection.commit()
+        return [200, json.dumps({"success": "ok"})]
+    except (ValueError, dbConnection.error) as e:
+        return [500, json.dumps({"failure": str(e)})]
+
+
+def use_item(requestBody):
+    try:
+        data = json.loads(requestBody)
+        userID = data.get('userID')
+
+        query = "UPDATE Student_Items SET Amount = Amount - 1 WHERE Student_ID = %s"
+        dbConnection.cursor.execute(query,[userID])
+        dbConnection.connection.commit()
+
+        return [200, json.dumps({"success": "ok"})]
+    except (ValueError, dbConnection.error) as e:
+        return [500, json.dumps({"failure": str(e)})]

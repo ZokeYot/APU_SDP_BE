@@ -10,7 +10,7 @@ def login(request_body):
         email = data.get('email')
         password = data.get('password')
 
-        query = "SELECT * FROM User Where Email = %s"
+        query = "SELECT * FROM User  Where Email = %s"
         dbConnection.cursor.execute(query, [email])
         row = dbConnection.cursor.fetchone()
 
@@ -20,7 +20,12 @@ def login(request_body):
             raise ValueError('Wrong Password')
 
         role = "lecturer" if row[7] == 1 else "student"
-        return [200, json.dumps({"userID": row[0], "role": role})]
+        amount = 0
+        if role == "student":
+            dbConnection.cursor.execute("SELECT Amount FROM Student_Items WHERE Student_ID = %s", [row[0]])
+            result = dbConnection.cursor.fetchone()
+            amount = result[0] if result else 0
+        return [200, json.dumps({"userID": row[0], "role": role, "item_amount":amount})]
     except (ValueError, dbConnection.error) as e:
         return [500, json.dumps({"failure": str(e)})]
 
@@ -46,7 +51,7 @@ def register(request_body):
 
         return [200, json.dumps({"success": "New User Registered Successfully"})]
 
-    except (ValueError,dbConnection.error) as e:
+    except (ValueError, dbConnection.error) as e:
         return [500, json.dumps({"failure": str(e)})]
 
 
@@ -72,7 +77,6 @@ def get_all_student():
         return [200, json.dumps(students)]
     except (ValueError, dbConnection.error) as e:
         return [500, json.dumps({"failure": str(e)})]
-
 
 
 def update_profile(request_body):
@@ -108,31 +112,30 @@ def update_profile(request_body):
 
 
 def get_profile(request_body):
-    data = json.loads(request_body)
-    userID = data.get('userID')
-    query = "SELECT * FROM User WHERE User_ID = %s"
+    try:
+        data = json.loads(request_body)
+        userID = data.get('userID')
+        query = "SELECT u.*, Amount FROM User u Left Join Student_Items s on u.User_ID = s.Student_ID " \
+                "WHERE u.User_ID = %s"
 
-    dbConnection.cursor.execute(query, [userID])
-    row = dbConnection.cursor.fetchone()
+        dbConnection.cursor.execute(query, [userID])
+        row = dbConnection.cursor.fetchone()
 
-    if row is None:
-        raise ValueError("User Not Found")
+        if row is None:
+            raise ValueError("User Not Found")
 
-    user = {
-        "id": row[0],
-        "name": row[1],
-        "email": row[2],
-        "password" : row[3],
-        "gender": row[4],
-        "profile_picture": base64.b64encode(row[5]).decode('utf-8'),
-        "dob": str(row[6]),
-        "title": row[9],
-        "gaming_point": row[10]
-    }
-
-    return [200, json.dumps(user)]
-
-
-
-
-
+        user = {
+            "id": row[0],
+            "name": row[1],
+            "email": row[2],
+            "password": row[3],
+            "gender": row[4],
+            "profile_picture": base64.b64encode(row[5]).decode('utf-8'),
+            "dob": str(row[6]),
+            "title": row[9],
+            "gaming_point": row[10],
+            "item_amount": row[11] if row[11] else 0
+        }
+        return [200, json.dumps(user)]
+    except (dbConnection.error, ValueError) as e:
+        return [500, json.dumps({"failure": str(e)})]

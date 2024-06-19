@@ -47,17 +47,19 @@ class ApiServer(BaseHTTPRequestHandler):
             response = QuizController.get_lecturer_quizzes(self.get_request_body())
         elif self.path == "/quiz/create":
             response = QuizController.create_quiz(self.get_request_body())
-        elif self.path == "/quiz/add":
+        elif self.path == "/quiz/add-participant":
             response = QuizController.add_participant(self.get_request_body())
         elif self.path == "/quiz/update":
             response = QuizController.update_quiz(self.get_request_body())
+        elif self.path == "/quiz/delete":
+            response = QuizController.delete_quiz(self.get_request_body())
         elif self.path == "/quiz/join":
             response = QuizController.join_quiz(self.get_request_body())
         elif self.path == "/quiz/check-quiz":
             response = QuizController.find_participant(self.get_request_body())
         elif self.path == "/quiz/participants":
             response = QuizController.get_quiz_participants(self.get_request_body())
-        elif self.path == "/quiz/delete":
+        elif self.path == "/quiz/delete-participant":
             response = QuizController.delete_participant(self.get_request_body())
         elif self.path == "/conversation/create-group":
             response = MessageGroupController.create_group(self.get_request_body())
@@ -89,6 +91,10 @@ class ApiServer(BaseHTTPRequestHandler):
             response = MaterialController.delete_material(self.get_request_body())
         elif self.path == "/game-title/add":
             response = GameItemController.add_title(self.get_request_body())
+        elif self.path == "/game-item/buy":
+            response = GameItemController.add_item(self.get_request_body())
+        elif self.path == "/game-item/use":
+            response = GameItemController.use_item(self.get_request_body())
         elif self.path == "/user/titles":
             response = GameItemController.get_titles(self.get_request_body())
         elif self.path == "/submission/all":

@@ -13,6 +13,7 @@ def add_submission(requestBody):
         completeDate = data.get('completeDate')
         response = json.dumps(data.get('response'))
         score = data.get('score')
+        gaming_point = data.get('gaming_point')
 
         query = "INSERT INTO Submission(Student_ID, Quiz_ID, Completed_Date, Response, Score)" \
                 "VALUES(%s, %s, %s, %s, %s)"
@@ -20,7 +21,7 @@ def add_submission(requestBody):
         dbConnection.cursor.execute(query, (studentID, quizID, completeDate, response, score))
         dbConnection.connection.commit()
 
-        dbConnection.cursor.execute("UPDATE User SET GamingPoint = GamingPoint + %s WHERE User_ID = %s", (score, studentID))
+        dbConnection.cursor.execute("UPDATE User SET GamingPoint = GamingPoint + %s WHERE User_ID = %s", (gaming_point, studentID))
 
         return [200, json.dumps({"success": "Quiz Submission Added"})]
     except (ValueError, dbConnection.error) as e:
