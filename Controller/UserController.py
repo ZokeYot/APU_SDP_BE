@@ -139,3 +139,27 @@ def get_profile(request_body):
         return [200, json.dumps(user)]
     except (dbConnection.error, ValueError) as e:
         return [500, json.dumps({"failure": str(e)})]
+
+
+def get_all_user():
+    dbConnection.cursor.execute("SELECT * FROM User")
+    result = dbConnection.cursor.fetchall()
+
+    users = []
+    for row in result:
+        role = "lecturer" if row[7] == 1 else "student"
+        user = {
+            "id": row[0],
+            "name": row[1],
+            "email": row[2],
+            "password": row[3],
+            "gender": row[4],
+            "profile_picture": base64.b64encode(row[5]).decode('utf-8'),
+            "dob": str(row[6]),
+            "role": role,
+            "title": row[9]
+        }
+
+
+        users.append(user)
+    return [200, json.dumps(users)]

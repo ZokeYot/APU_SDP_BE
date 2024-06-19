@@ -21,8 +21,7 @@ def get_group(requestBody):
             "groupID": result[0],
             "adminID": result[1],
             "name": result[2],
-            "description": result[3],
-            "profile_picture": base64.b64encode(result[4]).decode("utf-8")
+            "profile_picture": base64.b64encode(result[3]).decode("utf-8")
         }
 
         return [200, json.dumps(group)]
@@ -35,14 +34,13 @@ def create_group(requestBody):
         data = json.loads(requestBody)
         adminID = data.get('userID')
         name = data.get('name')
-        description = data.get('description')
         profile_picture = base64.b64decode(data.get('profile_picture'))
-        members = json.dumps(data.get('members'))
+        members = json.dumps([{"memberID": adminID}])
 
-        query = "INSERT INTO Conversation_Group(Admin_ID, Name, Description, Profile_Picture, Members)" \
-                "VALUES(%s, %s, %s, %s, %s)"
+        query = "INSERT INTO Conversation_Group(Admin_ID, Name, Profile_Picture, Members)" \
+                "VALUES(%s, %s, %s, %s)"
 
-        dbConnection.cursor.execute(query, (adminID, name, description, profile_picture, members))
+        dbConnection.cursor.execute(query, (adminID, name, profile_picture, members))
         dbConnection.connection.commit()
 
         return [200, json.dumps({"success": "Message Group Created Successfully"})]
@@ -55,16 +53,14 @@ def update_group(requestBody):
         data = json.loads(requestBody)
         groupID = data.get("groupID")
         name = data.get('name')
-        description = data.get('description')
         profile_picture = base64.b64decode(data.get('profile_picture'))
 
         query = "UPDATE Conversation_Group " \
                 "SET Name = %s," \
-                "Description = %s," \
                 "Profile_Picture = %s " \
                 "WHERE Group_ID = %s"
 
-        dbConnection.cursor.execute(query, (name, description, profile_picture, groupID))
+        dbConnection.cursor.execute(query, (name, profile_picture, groupID))
 
         return [200, json.dumps({"success": "Group Update Successfully"})]
     except (ValueError, dbConnection.error) as e:
@@ -139,4 +135,36 @@ def delete_members(requestBody):
 
         return [200, json.dumps({"success": "Members removed successfully"})]
     except ValueError as e:
+        return [500, json.dumps({"error": str(e)})]
+
+
+def get_group_members(requestBody):
+    try:
+        groupID = json.loads(requestBody).get('groupID')
+        query = "SELECT Members FROM Conversation_Group WHERE Group_ID = %s"
+        dbConnection.cursor.execute(query, [groupID])
+        row = dbConnection.cursor.fetchone()
+
+        members_json = row[0]
+        members_data = json.loads(members_json)
+
+        group_member = [member["memberID"] for member in members_data]
+        members = []
+
+        for member in group_member:
+            dbConnection.cursor.execute("SELECT * FROM User WHERE User_ID = %s", [member])
+            row = dbConnection.cursor.fetchone()
+            role = "lecturer" if row[7] == 1 else "student"
+            user = {
+                "id": row[0],
+                "name": row[1],
+                "gender": row[4],
+                "profile_picture": base64.b64encode(row[5]).decode('utf-8'),
+                "role": role,
+                "title": row[9]
+            }
+            members.append(user)
+
+        return [200, json.dumps(members)]
+    except (ValueError, dbConnection.error) as e:
         return [500, json.dumps({"error": str(e)})]

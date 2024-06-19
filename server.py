@@ -26,6 +26,8 @@ class ApiServer(BaseHTTPRequestHandler):
             response = MaterialController.get_materials()
         elif self.path == "/student/all":
             response = UserController.get_all_student()
+        elif self.path == "/user/all":
+            response = UserController.get_all_user()
 
         self.sent_response(response)
 
@@ -77,6 +79,8 @@ class ApiServer(BaseHTTPRequestHandler):
             response = MessageGroupController.update_group(self.get_request_body())
         elif self.path == "/conversation/group/delete":
             response = MessageGroupController.delete_group(self.get_request_body())
+        elif self.path == "/conversation/group/member/all":
+            response = MessageGroupController.get_group_members(self.get_request_body())
         elif self.path == "/conversation/group/member/add":
             response = MessageGroupController.add_members(self.get_request_body())
         elif self.path == "/conversation/group/member/delete":

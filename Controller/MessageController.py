@@ -122,7 +122,7 @@ def check_user_group(userID):
 def send_group_message(requestBody):
     try:
         data = json.loads(requestBody)
-        senderID = data.get('userID')
+        senderID = data.get('senderID')
         groupID = data.get('groupID')
         date = data.get('date')
         content = data.get('content')
