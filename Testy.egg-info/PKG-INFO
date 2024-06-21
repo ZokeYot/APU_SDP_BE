@@ -1,0 +1,26 @@
+Metadata-Version: 2.1
+Name: Testy
+Version: 0.1
+Summary: Gamification E-Learning System
+Home-page: https://github.com/ZokeYot/APU_SDP_BE
+Author: APU UCDF2208ICT(SE) SDP Team 17
+Author-email: zokeyot2004@gmail.com
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+
+Testy - Gamification E-Learning System
+
+
+System Setup:
+
+1.Clone the repository
+
+2.Navigate to the project directory
+
+3.Install the package:
+
+```shell
+pip install .

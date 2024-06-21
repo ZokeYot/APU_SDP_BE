@@ -26,7 +26,7 @@ def get_group(requestBody):
 
         return [200, json.dumps(group)]
     except (ValueError, dbConnection.error) as e:
-        return [500, json.dumps({"error": str(e)})]
+        return [500, json.dumps({"failure": str(e)})]
 
 
 def create_group(requestBody):
@@ -45,7 +45,7 @@ def create_group(requestBody):
 
         return [200, json.dumps({"success": "Message Group Created Successfully"})]
     except (ValueError, dbConnection.error) as e:
-        return [500, json.dumps({"error": str(e)})]
+        return [500, json.dumps({"failure": str(e)})]
 
 
 def update_group(requestBody):
@@ -64,7 +64,7 @@ def update_group(requestBody):
 
         return [200, json.dumps({"success": "Group Update Successfully"})]
     except (ValueError, dbConnection.error) as e:
-        return [500, json.dumps({"error": str(e)})]
+        return [500, json.dumps({"failure": str(e)})]
 
 def delete_group(reqeustBody):
     try:
@@ -77,7 +77,7 @@ def delete_group(reqeustBody):
         return[200, json.dumps({"success": "Group Delete Successfully"})]
 
     except (ValueError , dbConnection.error) as e:
-        return [500, json.dumps({"error": str(e)})]
+        return [500, json.dumps({"failure": str(e)})]
 
 
 def add_members(requestBody):
@@ -110,7 +110,7 @@ def add_members(requestBody):
         return [200, json.dumps({"success": "Members added successfully"})]
 
     except (ValueError, dbConnection.error) as e:
-        return [500, json.dumps({"error": str(e)})]
+        return [500, json.dumps({"failure": str(e)})]
 
 
 def delete_members(requestBody):
@@ -136,7 +136,7 @@ def delete_members(requestBody):
 
         return [200, json.dumps({"success": "Members removed successfully"})]
     except ValueError as e:
-        return [500, json.dumps({"error": str(e)})]
+        return [500, json.dumps({"failure": str(e)})]
 
 
 def get_group_members(requestBody):
@@ -168,4 +168,4 @@ def get_group_members(requestBody):
 
         return [200, json.dumps(members)]
     except (ValueError, dbConnection.error) as e:
-        return [500, json.dumps({"error": str(e)})]
+        return [500, json.dumps({"failure": str(e)})]
