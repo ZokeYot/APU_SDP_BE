@@ -86,6 +86,8 @@ def add_members(requestBody):
         groupID = data.get('groupID')
         newMembers = data.get('members')
 
+        print(newMembers)
+
         query = "SELECT Members FROM Conversation_Group WHERE Group_ID = %s"
         dbConnection.cursor.execute(query, [groupID])
         result = dbConnection.cursor.fetchone()
