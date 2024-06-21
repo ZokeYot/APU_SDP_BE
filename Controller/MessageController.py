@@ -112,7 +112,6 @@ def check_user_group(userID):
         group_id, members_json = row[0], row[1]
         members_data = json.loads(members_json)
         members_id = [member["memberID"] for member in members_data]
-        print(members_id)
 
         if int(userID) in members_id or str(userID) in members_id:
             user_group.append(group_id)
