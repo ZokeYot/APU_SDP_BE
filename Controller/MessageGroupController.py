@@ -35,7 +35,7 @@ def create_group(requestBody):
         adminID = data.get('userID')
         name = data.get('name')
         profile_picture = base64.b64decode(data.get('profile_picture'))
-        members = json.dumps([{"memberID": adminID}])
+        members = json.dumps([{"memberID": int(adminID)}])
 
         query = "INSERT INTO Conversation_Group(Admin_ID, Name, Profile_Picture, Members)" \
                 "VALUES(%s, %s, %s, %s)"
@@ -153,6 +153,8 @@ def get_group_members(requestBody):
         members = []
 
         for member in group_member:
+            member = str(member)
+            print(member)
             dbConnection.cursor.execute("SELECT * FROM User WHERE User_ID = %s", [member])
             row = dbConnection.cursor.fetchone()
             role = "lecturer" if row[7] == 1 else "student"

@@ -147,7 +147,8 @@ def find_participant(requestBody):
 
 def get_quizzes():
     try:
-        dbConnection.cursor.execute("SELECT Quiz.*, User.Name FROM Quiz join User ON Quiz.Quiz_Admin = User.User_ID")
+        dbConnection.cursor.execute("SELECT Quiz.*, User.Name FROM Quiz join User ON Quiz.Quiz_Admin = User.User_ID "
+                                    "ORDER BY Quiz_ID ASC")
         result = dbConnection.cursor.fetchall()
         quizzes = []
 
@@ -201,7 +202,7 @@ def get_lecturer_quizzes(requestBody):
     try:
         lecturerID = json.loads(requestBody).get('lecturerID')
         dbConnection.cursor.execute("SELECT Quiz.* , User.Name FROM Quiz JOIN User "
-                                    "ON Quiz.Quiz_Admin = User.User_ID WHERE Quiz_Admin = %s", [lecturerID])
+                                    "ON Quiz.Quiz_Admin = User.User_ID WHERE Quiz_Admin = %s ORDER BY Quiz_ID ASC", [lecturerID])
         result = dbConnection.cursor.fetchall()
         quizzes = []
 
